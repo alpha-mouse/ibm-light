@@ -38,10 +38,18 @@ export default function Home() {
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
       // The structure depends on NoSketch output; adjust as needed
-      const lines: ConcordanceLine[] = (data.Lines || []).map((line: [string, string, string]) => ({
-        left: line[0],
-        kwic: line[1],
-        right: line[2],
+      // Remove <s> and </s> tags and any extra whitespace between sentences
+      const joinTokens = (arr: any[] = []) =>
+        arr
+          .map(token => (token.str ?? token.strc ?? ""))
+          .join(" ")
+          .replace(/ ?<\/?s> ?/g, "") // remove <s> and </s> and any spaces around them
+          .replace(/\s{2,}/g, " ")    // collapse multiple spaces
+          .trim();
+      const lines: ConcordanceLine[] = (data.Lines || []).map((line: any) => ({
+        left: joinTokens(line.Left),
+        kwic: joinTokens(line.Kwic),
+        right: joinTokens(line.Right),
       }));
       setResults(lines);
     } catch (err: unknown) {
