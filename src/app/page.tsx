@@ -39,14 +39,20 @@ export default function Home() {
       const data = await res.json();
       // The structure depends on NoSketch output; adjust as needed
       // Remove <s> and </s> tags and any extra whitespace between sentences
-      const joinTokens = (arr: any[] = []) =>
+      type ConcordanceToken = { str?: string; strc?: string; coll?: number };
+      type ConcordanceLineRaw = {
+        Left?: ConcordanceToken[];
+        Kwic?: ConcordanceToken[];
+        Right?: ConcordanceToken[];
+      };
+      const joinTokens = (arr: ConcordanceToken[] = []) =>
         arr
           .map(token => (token.str ?? token.strc ?? ""))
           .join(" ")
           .replace(/ ?<\/?s> ?/g, "") // remove <s> and </s> and any spaces around them
           .replace(/\s{2,}/g, " ")    // collapse multiple spaces
           .trim();
-      const lines: ConcordanceLine[] = (data.Lines || []).map((line: any) => ({
+      const lines: ConcordanceLine[] = (data.Lines || []).map((line: ConcordanceLineRaw) => ({
         left: joinTokens(line.Left),
         kwic: joinTokens(line.Kwic),
         right: joinTokens(line.Right),
