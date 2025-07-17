@@ -1,13 +1,6 @@
 "use client";
 import React, { useState } from "react";
-
-const NOSKETCH_API = "https://bytest-app-one-lgm84.ondigitalocean.app/bonito/run.cgi";
-
-interface ConcordanceLine {
-  left: string;
-  kwic: string;
-  right: string;
-}
+import { fetchConcordanceLines, ConcordanceLine } from "./concordanceApi";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -21,42 +14,7 @@ export default function Home() {
     setError(null);
     setResults([]);
     try {
-      // Example: call /view?corpname=preloaded%2Fbnc&query=dog
-      const url = `${NOSKETCH_API}/concordance?corpname=bytest
-&attrs=word
-&refs=doc
-&attr_allpos=all
-&viewmode=kwic
-&cup_hl=q
-&structs=s,g
-&fromp=1
-&pagesize=20
-&kwicleftctx=100%23
-&kwicrightctx=100%23
-&json={"concordance_query":[{"queryselector":"iqueryrow","iquery":"${encodeURIComponent(query)}"}]}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
-      // The structure depends on NoSketch output; adjust as needed
-      // Remove <s> and </s> tags and any extra whitespace between sentences
-      type ConcordanceToken = { str?: string; strc?: string; coll?: number };
-      type ConcordanceLineRaw = {
-        Left?: ConcordanceToken[];
-        Kwic?: ConcordanceToken[];
-        Right?: ConcordanceToken[];
-      };
-      const joinTokens = (arr: ConcordanceToken[] = []) =>
-        arr
-          .map(token => (token.str ?? token.strc ?? ""))
-          .join(" ")
-          .replace(/ ?<\/?s> ?/g, "") // remove <s> and </s> and any spaces around them
-          .replace(/\s{2,}/g, " ")    // collapse multiple spaces
-          .trim();
-      const lines: ConcordanceLine[] = (data.Lines || []).map((line: ConcordanceLineRaw) => ({
-        left: joinTokens(line.Left),
-        kwic: joinTokens(line.Kwic),
-        right: joinTokens(line.Right),
-      }));
+      const lines = await fetchConcordanceLines(query);
       setResults(lines);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
