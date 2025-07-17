@@ -1,0 +1,1 @@
+export const NOSKETCH_API = "https://bytest-app-one-lgm84.ondigitalocean.app/bonito/run.cgi"; 

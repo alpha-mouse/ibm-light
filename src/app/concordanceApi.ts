@@ -1,3 +1,5 @@
+import { NOSKETCH_API } from "./config";
+
 export interface ConcordanceLine {
   left: string;
   kwic: string;
@@ -10,8 +12,6 @@ type ConcordanceLineRaw = {
   Kwic?: ConcordanceToken[];
   Right?: ConcordanceToken[];
 };
-
-const NOSKETCH_API = "https://bytest-app-one-lgm84.ondigitalocean.app/bonito/run.cgi";
 
 function joinTokens(arr: ConcordanceToken[] = []) {
   return arr
