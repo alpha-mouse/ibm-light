@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { fetchConcordanceLines, ConcordanceLine } from "./concordanceApi";
-import { fetchWordsStub } from "./wordsApiStub";
+import { fetchWords, WordListItem } from "./wordsApi";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -9,7 +9,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"concordance" | "words">("concordance");
-  const [words, setWords] = useState<string[]>([]);
+  const [words, setWords] = useState<WordListItem[]>([]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +17,13 @@ export default function Home() {
     setError(null);
     setResults([]);
     try {
-      const lines = await fetchConcordanceLines(query);
+      let lines: ConcordanceLine[] = [];
+      if (tab === "concordance") {
+        lines = await fetchConcordanceLines(query);
+      } else if (tab === "words") {
+        const wordItems = await fetchWords(query);
+        setWords(wordItems);
+      }
       setResults(lines);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -30,7 +36,7 @@ export default function Home() {
   const handleTabChange = (newTab: "concordance" | "words") => {
     setTab(newTab);
     if (newTab === "words") {
-      fetchWordsStub(query).then(setWords);
+      fetchWords(query).then(setWords);
     }
   };
 
@@ -44,7 +50,6 @@ export default function Home() {
           onChange={e => setQuery(e.target.value)}
           placeholder="Enter word or phrase..."
           className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          required
         />
         <button
           type="submit"
@@ -91,7 +96,28 @@ export default function Home() {
           </>
         )}
         {tab === "words" && (
-          <div className="text-gray-400 text-center">Words API stub: {words.length ? words.join(", ") : "No data yet."}</div>
+          <>
+            {error && <div className="text-red-600 mb-4">{error}</div>}
+            {words.length > 0 && (
+              <ul className="space-y-2">
+                {words.map((word, idx) => (
+                  <li
+                    key={idx}
+                    className="bg-white dark:bg-gray-800 p-3 rounded shadow text-gray-700 dark:text-gray-200 flex justify-between items-center"
+                  >
+                    <span>{word.str}</span>
+                    <span>{word.pos}</span>
+                    <span className="ml-4 text-right text-gray-500 dark:text-gray-400 min-w-[3.5rem] font-mono">
+                      {word.frq}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {words.length === 0 && !loading && (
+              <div className="text-gray-400 text-center">No results yet. Try searching for a word.</div>
+            )}
+          </>
         )}
       </div>
     </div>
