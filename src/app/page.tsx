@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { fetchConcordanceLines, ConcordanceLine } from "./concordanceApi";
 import { fetchWords, WordListItem } from "./wordsApi";
+import { dict } from "./dictionaries";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -42,13 +43,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
-      <h1 className="text-3xl font-bold mb-6 text-center">Corpus Search (NoSketch Engine)</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">{(dict as { site: { h1: string } }).site.h1}</h1>
       <form onSubmit={handleSearch} className="flex gap-2 mb-4 w-full max-w-xl">
         <input
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Enter word or phrase..."
+          placeholder={(dict as { homepage: { search: { hint: string } } }).homepage.search.hint}
           className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <button
@@ -56,7 +57,9 @@ export default function Home() {
           className="px-6 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
           disabled={loading}
         >
-          {loading ? "Searching..." : "Search"}
+          {loading
+            ? ((dict as { homepage: { search: { searching?: string } } }).homepage.search.searching)
+            : (dict as { homepage: { search: { button: string } } }).homepage.search.button}
         </button>
       </form>
       {/* Tabs */}
@@ -65,13 +68,13 @@ export default function Home() {
           className={`px-4 py-2 -mb-px border-b-2 font-semibold transition-colors ${tab === "concordance" ? "border-blue-600 text-blue-700 dark:text-blue-300" : "border-transparent text-gray-500"}`}
           onClick={() => handleTabChange("concordance")}
         >
-          Concordance
+          {(dict as { homepage: { search: { concordance: string } } }).homepage.search.concordance}
         </button>
         <button
           className={`px-4 py-2 -mb-px border-b-2 font-semibold transition-colors ${tab === "words" ? "border-blue-600 text-blue-700 dark:text-blue-300" : "border-transparent text-gray-500"}`}
           onClick={() => handleTabChange("words")}
         >
-          Words
+          {(dict as { homepage: { search: { wordlist: string } } }).homepage.search.wordlist}
         </button>
       </div>
       {/* Tab content */}
@@ -91,7 +94,7 @@ export default function Home() {
               </ul>
             )}
             {results.length === 0 && !loading && (
-              <div className="text-gray-400 text-center">No results yet. Try searching for a word.</div>
+              <div className="text-gray-400 text-center">{(dict as { homepage: { search: { noresultsyet: string } } }).homepage.search.noresultsyet}</div>
             )}
           </>
         )}
@@ -115,7 +118,7 @@ export default function Home() {
               </ul>
             )}
             {words.length === 0 && !loading && (
-              <div className="text-gray-400 text-center">No results yet. Try searching for a word.</div>
+              <div className="text-gray-400 text-center">{(dict as { homepage: { search: { noresults: string } } }).homepage.search.noresults}</div>
             )}
           </>
         )}
